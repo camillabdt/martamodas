@@ -9,10 +9,11 @@ from .schemas import DashboardStats, OrderCreate, OrderOut, OrderUpdate, VALID_S
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Marta Modas API", version="1.0.0")
+app = FastAPI(title="Marta Modas API", version="2.0.0", description="API do sistema de gestão do Marta Modas Ateliê")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[origin.strip() for origin in os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",") if origin.strip()],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -27,6 +28,8 @@ def validate_status(status: str) -> str:
 
 @app.on_event("startup")
 def seed_demo_data():
+    if os.getenv("SEED_DEMO_DATA", "false").lower() != "true":
+        return
     with SessionLocal() as db:
         if db.scalar(select(func.count()).select_from(Order)) == 0:
             demo = [
@@ -36,6 +39,11 @@ def seed_demo_data():
             ]
             db.add_all(demo)
             db.commit()
+
+
+@app.get("/")
+def root():
+    return {"app": "Marta Modas API", "status": "online", "docs": "/docs", "health": "/health"}
 
 
 @app.get("/health")

@@ -1,29 +1,29 @@
-# Marta Modas Ateliê
+# Marta Modas Ateliê — sistema pronto para GitHub
 
-Sistema para gerenciar clientes, peças sob medida, status de produção e mensagens prontas para WhatsApp.
+Sistema web para controlar clientes e pedidos do ateliê: cadastro, edição, exclusão, busca, etapas de produção, data prevista, observações, painel de indicadores e mensagem pronta para WhatsApp.
 
-## O que já está pronto
+## Estrutura
 
-- Frontend React + Vite
-- API FastAPI
-- Banco local SQLite para desenvolvimento
-- Compatibilidade com PostgreSQL/Supabase em produção
-- Cadastro, edição, exclusão, busca e filtros
-- Dashboard por status
-- Link de WhatsApp com mensagem pronta
-- Configuração para Render e Vercel
+- `frontend/`: React + Vite
+- `backend/`: FastAPI + SQLAlchemy
+- Banco local: SQLite
+- Banco online: PostgreSQL/Supabase
+- Deploy: Vercel + Render
 
-## Rodar localmente
+## Rodar no computador
 
 ### Backend
 
 ```bash
 cd backend
-python3 -m venv .venv
-source .venv/bin/activate
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
+
+Acesse `http://localhost:8000/docs`.
 
 ### Frontend
 
@@ -35,76 +35,56 @@ npm install
 npm run dev
 ```
 
-Abra `http://localhost:5173`.
+Acesse `http://localhost:5173`.
 
-## Banco online no Supabase
+## Publicar
 
-1. No Supabase, clique em **Connect**.
-2. Copie a connection string do pooler.
-3. Substitua `[YOUR-PASSWORD]` pela senha do banco.
-4. Não salve essa URL no GitHub.
+### 1. Supabase
 
-Exemplo:
+Crie o projeto e copie a URI do **Transaction Pooler**, normalmente na porta `6543`. Use o usuário real no formato `postgres.PROJECT_REF`.
 
-```text
-postgresql://postgres.PROJECT_REF:SENHA@aws-1-sa-east-1.pooler.supabase.com:6543/postgres
-```
-
-A aplicação cria a tabela `orders` automaticamente na primeira inicialização.
-
-## Publicar o backend no Render
-
-1. Faça push deste projeto para o GitHub.
-2. No Render, escolha **New → Blueprint**.
-3. Selecione o repositório. O arquivo `render.yaml` configura a API.
-4. Preencha as variáveis solicitadas:
-   - `DATABASE_URL`: URI completa do Supabase.
-   - `CORS_ORIGINS`: inicialmente `http://localhost:5173`; depois acrescente o domínio da Vercel.
-5. Aguarde o deploy e copie a URL pública, por exemplo:
+Exemplo (não copie literalmente):
 
 ```text
-https://martamodas-api.onrender.com
+postgresql+psycopg://postgres.PROJECT_REF:SENHA@aws-1-sa-east-1.pooler.supabase.com:6543/postgres
 ```
+
+### 2. Render (backend)
+
+Crie um Blueprint usando o `render.yaml`. Configure:
+
+- `DATABASE_URL`: URI completa do Supabase
+- `CORS_ORIGINS`: `http://localhost:5173,https://martamodas.vercel.app`
+- `SEED_DEMO_DATA`: `false`
 
 Teste:
 
-```text
-https://martamodas-api.onrender.com/health
-```
+- `/` mostra que a API está online
+- `/health` retorna `{"status":"ok"}`
+- `/docs` abre a documentação
 
-## Publicar o frontend na Vercel
+### 3. Vercel (frontend)
 
-1. Na Vercel, importe o mesmo repositório.
-2. Defina **Root Directory** como `frontend`.
-3. Adicione a variável:
+Importe este repositório e escolha `frontend` como **Root Directory**. Adicione:
 
 ```text
-VITE_API_URL=https://SUA-API.onrender.com
+VITE_API_URL=https://martamodas-api.onrender.com
 ```
 
-4. Publique.
-5. Copie o domínio da Vercel.
-6. Volte ao Render e altere `CORS_ORIGINS` para:
+Depois clique em **Deploy**.
 
-```text
-http://localhost:5173,https://SEU-PROJETO.vercel.app
-```
+## Atualizar o repositório existente
 
-7. Faça um novo deploy da API.
-
-## Atualizar o GitHub
+Extraia o ZIP, copie todo o conteúdo para a pasta do repositório e execute:
 
 ```bash
 git add .
-git commit -m "Preparar banco e deploy online"
+git commit -m "Atualizar sistema Marta Modas"
 git push
 ```
 
+Render e Vercel farão novo deploy automaticamente.
+
 ## Segurança
 
-Nunca envie para o GitHub:
-
-- senha do Supabase;
-- `DATABASE_URL` real;
-- arquivos `.env`;
-- tokens de Render ou Vercel.
+Nunca envie `.env`, senha do Supabase, tokens ou a `DATABASE_URL` real ao GitHub.
