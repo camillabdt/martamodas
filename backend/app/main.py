@@ -1,4 +1,4 @@
-from pathlib import Path
+import os
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import func, or_, select
@@ -7,14 +7,13 @@ from .database import Base, SessionLocal, engine, get_db
 from .models import Order
 from .schemas import DashboardStats, OrderCreate, OrderOut, OrderUpdate, VALID_STATUSES
 
-Path("data").mkdir(exist_ok=True)
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Marta Modas API", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "*"],
-    allow_credentials=True,
+    allow_origins=[origin.strip() for origin in os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",") if origin.strip()],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
